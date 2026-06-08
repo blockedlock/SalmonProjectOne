@@ -1,4 +1,8 @@
 package com.myproject.salmon.repository;
 
-public interface PriceHistoryRepository {
+import com.myproject.salmon.model.PriceHistory;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PriceHistoryRepository extends JpaRepository<PriceHistory, Long> {
+
 }
