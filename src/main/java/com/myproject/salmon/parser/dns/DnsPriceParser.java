@@ -2,6 +2,7 @@ package com.myproject.salmon.parser.dns;
 
 import com.myproject.salmon.parser.ParsedProduct;
 import com.myproject.salmon.parser.PriceParser;
+import com.myproject.salmon.parser.scrapingbee.ScrapingBeeClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Document;
@@ -11,6 +12,12 @@ import java.math.BigDecimal;
 @Component
 public class DnsPriceParser implements PriceParser{
 
+    private final ScrapingBeeClient scrapingBeeClient;
+
+    public DnsPriceParser(ScrapingBeeClient scrapingBeeClient) {
+        this.scrapingBeeClient = scrapingBeeClient;
+    }
+
     @Override
     public boolean supports(String url) {
         return url.contains("dns-shop.ru");
@@ -19,9 +26,9 @@ public class DnsPriceParser implements PriceParser{
     @Override
     public ParsedProduct parse(String url) {
         try {
-            Document doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0")
-                    .get();
+            String html = scrapingBeeClient.fetchHtml(url, true,true);
+            Document doc = Jsoup.parse(html);
+
             Element priceEl = doc.selectFirst(".product-buy__price");
             Element nameEl = doc.selectFirst(".product-card-top__title");
 
