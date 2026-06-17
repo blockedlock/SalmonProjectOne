@@ -3,6 +3,10 @@ package com.myproject.salmon.bot;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+
+import java.util.List;
 
 @Component
 public class MyBot extends TelegramLongPollingBot {
@@ -42,5 +46,6 @@ public class MyBot extends TelegramLongPollingBot {
             textHandler.handle(chatId, text, this);
 
         }
+
     }
 }
