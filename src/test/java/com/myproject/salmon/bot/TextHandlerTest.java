@@ -65,21 +65,17 @@ class TextHandlerTest {
 
     @Test
     void handle_addCommand_shouldSetWaitingForUrlState() throws TelegramApiException {
-        // Arrange
         long chatId = 12345L;
         String username = "testuser";
         String text = "➕ Добавить";
 
-        // Act
         textHandler.handle(chatId, username, text, bot);
 
-        // Assert
         verify(bot, times(1)).execute(any(SendMessage.class));
     }
 
     @Test
     void handle_deleteCommand_shouldShowProducts() throws TelegramApiException {
-        // Arrange
         long chatId = 12345L;
         String username = "testuser";
         String text = "❌ Удалить";
@@ -87,10 +83,8 @@ class TextHandlerTest {
         when(userService.getOrCreateUser(chatId, username)).thenReturn(testUser);
         when(productService.getProductsByUser(testUser)).thenReturn(Arrays.asList(testProduct));
 
-        // Act
         textHandler.handle(chatId, username, text, bot);
 
-        // Assert
         verify(userService, times(1)).getOrCreateUser(chatId, username);
         verify(productService, times(1)).getProductsByUser(testUser);
         verify(bot, times(1)).execute(any(SendMessage.class));
@@ -98,7 +92,6 @@ class TextHandlerTest {
 
     @Test
     void handle_deleteCommand_shouldShowNoProductsMessage() throws TelegramApiException {
-        // Arrange
         long chatId = 12345L;
         String username = "testuser";
         String text = "❌ Удалить";
@@ -106,10 +99,8 @@ class TextHandlerTest {
         when(userService.getOrCreateUser(chatId, username)).thenReturn(testUser);
         when(productService.getProductsByUser(testUser)).thenReturn(Arrays.asList());
 
-        // Act
         textHandler.handle(chatId, username, text, bot);
 
-        // Assert
         verify(userService, times(1)).getOrCreateUser(chatId, username);
         verify(productService, times(1)).getProductsByUser(testUser);
         verify(bot, times(1)).execute(any(SendMessage.class));
@@ -117,86 +108,68 @@ class TextHandlerTest {
 
     @Test
     void handle_listCommand_shouldSendListMessage() throws TelegramApiException {
-        // Arrange
         long chatId = 12345L;
         String username = "testuser";
         String text = "📋 Список";
 
-        // Act
         textHandler.handle(chatId, username, text, bot);
 
-        // Assert
         verify(bot, times(1)).execute(any(SendMessage.class));
     }
 
     @Test
     void handle_settingsCommand_shouldSendSettingsMessage() throws TelegramApiException {
-        // Arrange
         long chatId = 12345L;
         String username = "testuser";
         String text = "⚙️ Настройки";
 
-        // Act
         textHandler.handle(chatId, username, text, bot);
 
-        // Assert
         verify(bot, times(1)).execute(any(SendMessage.class));
     }
 
     @Test
     void handle_unknownCommand_shouldNotSendMessage() throws TelegramApiException {
-        // Arrange
         long chatId = 12345L;
         String username = "testuser";
         String text = "unknown command";
 
-        // Act
         textHandler.handle(chatId, username, text, bot);
 
-        // Assert
         verify(bot, never()).execute(any(SendMessage.class));
     }
 
     @Test
     void handleCallback_deleteProduct_shouldConfirm() throws TelegramApiException {
-        // Arrange
         long chatId = 12345L;
         String callbackData = "delete_product_1";
         
         when(productService.getProductById(1L)).thenReturn(testProduct);
 
-        // Act
         textHandler.handleCallback(chatId, callbackData, bot);
 
-        // Assert
         verify(productService, times(1)).getProductById(1L);
         verify(bot, times(1)).execute(any(SendMessage.class));
     }
 
     @Test
     void handleCallback_confirmDelete_shouldDeleteProduct() throws TelegramApiException {
-        // Arrange
         long chatId = 12345L;
         String callbackData = "confirm_delete_1";
 
-        // Act
         textHandler.handleCallback(chatId, callbackData, bot);
 
-        // Assert
         verify(productService, times(1)).deleteProduct(1L);
         verify(bot, times(1)).execute(any(SendMessage.class));
     }
 
     @Test
     void handleCallback_cancelDelete_shouldCancel() throws TelegramApiException {
-        // Arrange
         long chatId = 12345L;
         String callbackData = "cancel_delete";
 
-        // Act
         textHandler.handleCallback(chatId, callbackData, bot);
 
-        // Assert
         verify(productService, never()).deleteProduct(anyLong());
         verify(bot, times(1)).execute(any(SendMessage.class));
     }

@@ -52,7 +52,6 @@ class ProductServiceTest {
 
     @Test
     void addProduct_shouldSaveToDatabase() {
-        // Arrange
         String url = "https://example.com/new-product";
         Product expectedProduct = Product.builder()
                 .user(testUser)
@@ -62,10 +61,8 @@ class ProductServiceTest {
 
         when(productRepository.save(any(Product.class))).thenReturn(expectedProduct);
 
-        // Act
         Product result = productService.addProduct(testUser, url);
 
-        // Assert
         assertNotNull(result);
         assertEquals(url, result.getUrl());
         assertEquals(testUser, result.getUser());
@@ -74,14 +71,11 @@ class ProductServiceTest {
 
     @Test
     void getAllProducts_shouldReturnAllProducts() {
-        // Arrange
         List<Product> expectedProducts = Arrays.asList(testProduct);
         when(productRepository.findAll()).thenReturn(expectedProducts);
 
-        // Act
         List<Product> result = productService.getAllProducts();
 
-        // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(testProduct.getId(), result.get(0).getId());
@@ -90,13 +84,10 @@ class ProductServiceTest {
 
     @Test
     void getProductById_shouldReturnProduct() {
-        // Arrange
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
 
-        // Act
         Product result = productService.getProductById(1L);
 
-        // Assert
         assertNotNull(result);
         assertEquals(testProduct.getId(), result.getId());
         assertEquals(testProduct.getName(), result.getName());
@@ -105,26 +96,20 @@ class ProductServiceTest {
 
     @Test
     void getProductById_shouldReturnNullIfNotFound() {
-        // Arrange
         when(productRepository.findById(999L)).thenReturn(Optional.empty());
 
-        // Act
         Product result = productService.getProductById(999L);
 
-        // Assert
         assertNull(result);
         verify(productRepository, times(1)).findById(999L);
     }
 
     @Test
     void createProduct_shouldSaveProduct() {
-        // Arrange
         when(productRepository.save(testProduct)).thenReturn(testProduct);
 
-        // Act
         Product result = productService.createProduct(testProduct);
 
-        // Assert
         assertNotNull(result);
         assertEquals(testProduct.getId(), result.getId());
         verify(productRepository, times(1)).save(testProduct);
@@ -132,20 +117,16 @@ class ProductServiceTest {
 
     @Test
     void deleteProduct_shouldCallRepositoryDelete() {
-        // Arrange
         Long productId = 1L;
         doNothing().when(productRepository).deleteById(productId);
 
-        // Act
         productService.deleteProduct(productId);
 
-        // Assert
         verify(productRepository, times(1)).deleteById(productId);
     }
 
     @Test
     void getProductsByUser_shouldReturnUserProducts() {
-        // Arrange
         Product product2 = Product.builder()
                 .id(2L)
                 .user(testUser)
@@ -155,10 +136,8 @@ class ProductServiceTest {
         List<Product> expectedProducts = Arrays.asList(testProduct, product2);
         when(productRepository.findByUser(testUser)).thenReturn(expectedProducts);
 
-        // Act
         List<Product> result = productService.getProductsByUser(testUser);
 
-        // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         assertTrue(result.stream().allMatch(p -> p.getUser().equals(testUser)));

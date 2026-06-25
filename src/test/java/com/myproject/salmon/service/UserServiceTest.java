@@ -39,15 +39,12 @@ class UserServiceTest {
 
     @Test
     void getOrCreateUser_shouldReturnExistingUser() {
-        // Arrange
         Long chatId = 12345L;
         String username = "testuser";
         when(userRepository.findByChatId(chatId)).thenReturn(Optional.of(testUser));
 
-        // Act
         User result = userService.getOrCreateUser(chatId, username);
 
-        // Assert
         assertNotNull(result);
         assertEquals(testUser.getId(), result.getId());
         assertEquals(testUser.getChatId(), result.getChatId());
@@ -57,16 +54,13 @@ class UserServiceTest {
 
     @Test
     void getOrCreateUser_shouldCreateNewUserIfNotFound() {
-        // Arrange
         Long chatId = 12345L;
         String username = "newuser";
         when(userRepository.findByChatId(chatId)).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-        // Act
         User result = userService.getOrCreateUser(chatId, username);
 
-        // Assert
         assertNotNull(result);
         verify(userRepository, times(1)).findByChatId(chatId);
         verify(userRepository, times(1)).save(any(User.class));
@@ -74,7 +68,6 @@ class UserServiceTest {
 
     @Test
     void getOrCreateUser_shouldCreateUserWithCorrectData() {
-        // Arrange
         Long chatId = 12345L;
         String username = "newuser";
         when(userRepository.findByChatId(chatId)).thenReturn(Optional.empty());
@@ -85,10 +78,8 @@ class UserServiceTest {
             return capturedUser[0];
         });
 
-        // Act
         User result = userService.getOrCreateUser(chatId, username);
 
-        // Assert
         assertEquals(chatId, result.getChatId());
         assertEquals(username, result.getUsername());
         assertNotNull(result.getCreatedAt());

@@ -48,11 +48,9 @@ class ProductControllerTest {
 
     @Test
     void getAllProducts_shouldReturn200() throws Exception {
-        // Arrange
         List<Product> products = Arrays.asList(testProduct);
         when(productService.getAllProducts()).thenReturn(products);
 
-        // Act & Assert
         mockMvc.perform(get("/api/products"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testProduct.getId()))
@@ -61,10 +59,8 @@ class ProductControllerTest {
 
     @Test
     void getProductById_shouldReturn200() throws Exception {
-        // Arrange
         when(productService.getProductById(1L)).thenReturn(testProduct);
 
-        // Act & Assert
         mockMvc.perform(get("/api/products/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(testProduct.getId()))
@@ -73,20 +69,17 @@ class ProductControllerTest {
 
     @Test
     void getProductById_shouldReturn404IfNotFound() throws Exception {
-        // Arrange
         when(productService.getProductById(999L)).thenReturn(null);
 
-        // Act & Assert
         mockMvc.perform(get("/api/products/999"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void createProduct_shouldReturn200() throws Exception {
-        // Arrange
         when(productService.createProduct(any(Product.class))).thenReturn(testProduct);
 
-        // Act & Assert
+
         mockMvc.perform(post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(testProduct)))
@@ -97,7 +90,6 @@ class ProductControllerTest {
 
     @Test
     void deleteProduct_shouldReturn204() throws Exception {
-        // Act & Assert
         mockMvc.perform(delete("/api/products/1"))
                 .andExpect(status().isNoContent());
     }
