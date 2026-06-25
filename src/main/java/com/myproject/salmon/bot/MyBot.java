@@ -2,11 +2,8 @@ package com.myproject.salmon.bot;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-
-import java.util.List;
 
 @Component
 public class MyBot extends TelegramLongPollingBot {
@@ -35,17 +32,30 @@ public class MyBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        if (update.hasCallbackQuery()) {
+            handleCallback(update.getCallbackQuery(), this);
+            return;
+        }
+
         if (!update.hasMessage() || !update.getMessage().hasText()) return;
 
         String text = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
+        String username = update.getMessage().getFrom() != null
+                ? update.getMessage().getFrom().getUserName()
+                : null;
 
         if (text.equals("/start")) {
             startHandler.handle(chatId, this);
         } else {
-            textHandler.handle(chatId, text, this);
-
+            textHandler.handle(chatId, username, text, this);
         }
+    }
 
+    private void handleCallback(CallbackQuery callbackQuery, MyBot bot) {
+        long chatId = callbackQuery.getMessage().getChatId();
+        String callbackData = callbackQuery.getData();
+
+        textHandler.handleCallback(chatId, callbackData, bot);
     }
 }
