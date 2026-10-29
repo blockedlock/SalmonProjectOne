@@ -45,7 +45,19 @@ public class PriceCheckScheduler {
                     ParsedProduct parsed = parser.parse(product.getUrl());
                     BigDecimal oldPrice = product.getCurrentPrice();
 
-                    if (product.getCurrentPrice() == null || !parsed.price().equals(product.getCurrentPrice())) {
+                    if (product.getCurrentPrice() == null) {
+                        log.error("Price was null for product {}, cannot check price change", product.getId());
+
+                        SendMessage message = new SendMessage();
+                        message.setChatId(product.getUser().getChatId());
+                        message.setText("Не удалось проверить цену для товара по ссылке " + product.getUrl() + ". Цена была не установлена.");
+
+                        try {
+                            bot.execute(message);
+                        } catch (TelegramApiException e) {
+                            log.error("Failed to send notification for product {}: {}", product.getId(), e.getMessage());
+                        }
+                    } else if (!parsed.price().equals(product.getCurrentPrice())) {
                         product.setCurrentPrice(parsed.price());
                         product.setLastCheckedAt(LocalDateTime.now());
                         productService.createProduct(product);
