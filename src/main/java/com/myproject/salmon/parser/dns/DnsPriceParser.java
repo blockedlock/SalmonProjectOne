@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 @Component
-public class DnsPriceParser implements PriceParser{
+public class DnsPriceParser implements PriceParser {
 
     private final ScrapingBeeClient scrapingBeeClient;
 
@@ -26,7 +26,7 @@ public class DnsPriceParser implements PriceParser{
     @Override
     public ParsedProduct parse(String url) {
         try {
-            String html = scrapingBeeClient.fetchHtml(url, true,true);
+            String html = scrapingBeeClient.fetchHtml(url, true, true);
             Document doc = Jsoup.parse(html);
 
             Element priceEl = doc.selectFirst(".product-buy__price");
@@ -36,7 +36,7 @@ public class DnsPriceParser implements PriceParser{
                 throw new RuntimeException("Цена не найдена");
             }
 
-            String priceText = priceEl.text().replaceAll("[^0-9]","");
+            String priceText = priceEl.text().replaceAll("[^0-9]", "");
             BigDecimal price = new BigDecimal(priceText);
             String name = nameEl != null ? nameEl.text() : "Без названия";
 
