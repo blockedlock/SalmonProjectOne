@@ -62,7 +62,7 @@ public class TextHandler {
                 message.setText("Вы выбрали 'Настройки'. Здесь вы можете изменить свои настройки и предпочтения.");
                 break;
             case "Какие сайты можно отслеживать?":
-                message.setText("Вы можете отслеживать товары со следующих сайтов:\n- Books.com \n- DNS.ru \n\n Список доступных для отслеживания сайтов будет постепенно расширяться, следите за обновлениями!");
+                message.setText("Вы можете отслеживать товары со следующих сайтов:\n- Books.com \n- DNS\n- Wildberries\n- Ozon\n- Avito \n\n Список доступных для отслеживания сайтов будет постепенно расширяться, следите за обновлениями!");
                 break;
             default:
                 return;
@@ -187,6 +187,7 @@ public class TextHandler {
     }
 
     private final Map<Long, Long> pendingDeleteProduct = new ConcurrentHashMap<>();
+    private final Map<Long, Integer> pendingDeleteMessage = new ConcurrentHashMap<>();
 
     public void handleCallback(long chatId, String callbackData, MyBot bot) {
         if (callbackData.startsWith("delete_product_")) {
@@ -198,7 +199,7 @@ public class TextHandler {
             Product product = productService.getProductById(productId);
             SendMessage message = new SendMessage();
             message.setChatId(chatId);
-            message.setText("Удалить товар: " + (product.getName() != null ? product.getName() : product.getUrl()) + "?");
+            message.setText("Удалить товар: " + product.getUrl() + "?");
 
             InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
             List<List<InlineKeyboardButton>> rows = new ArrayList<>();
@@ -219,7 +220,12 @@ public class TextHandler {
             keyboard.setKeyboard(rows);
             message.setReplyMarkup(keyboard);
 
-            sendMessage(bot, message);
+            try {
+                Message sentMessage = bot.execute(message);
+                pendingDeleteMessage.put(chatId, sentMessage.getMessageId());
+            } catch (TelegramApiException e) {
+                log.error("Error sending delete confirmation: {}", e.getMessage());
+            }
         }
 
         else if (callbackData.startsWith("confirm_delete_")) {
@@ -228,6 +234,18 @@ public class TextHandler {
 
             userStates.remove(chatId);
             pendingDeleteProduct.remove(chatId);
+
+            Integer messageId = pendingDeleteMessage.remove(chatId);
+            if (messageId != null) {
+                DeleteMessage deleteMessage = new DeleteMessage();
+                deleteMessage.setChatId(chatId);
+                deleteMessage.setMessageId(messageId);
+                try {
+                    bot.execute(deleteMessage);
+                } catch (TelegramApiException e) {
+                    log.error("Error deleting confirmation message: {}", e.getMessage());
+                }
+            }
 
             SendMessage message = new SendMessage();
             message.setChatId(chatId);
@@ -238,6 +256,18 @@ public class TextHandler {
         else if (callbackData.equals("cancel_delete")) {
             userStates.remove(chatId);
             pendingDeleteProduct.remove(chatId);
+
+            Integer messageId = pendingDeleteMessage.remove(chatId);
+            if (messageId != null) {
+                DeleteMessage deleteMessage = new DeleteMessage();
+                deleteMessage.setChatId(chatId);
+                deleteMessage.setMessageId(messageId);
+                try {
+                    bot.execute(deleteMessage);
+                } catch (TelegramApiException e) {
+                    log.error("Error deleting confirmation message: {}", e.getMessage());
+                }
+            }
 
             SendMessage message = new SendMessage();
             message.setChatId(chatId);
