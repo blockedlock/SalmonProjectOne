@@ -47,4 +47,8 @@ public class ProductService {
         return productRepository.findByUser(user);
     }
 
+    public List<Product> getProductsNeedingCheck(LocalDateTime threshold) {
+        return productRepository.findByLastCheckedAtBeforeOrLastCheckedAtIsNull(threshold);
+    }
+
 }

@@ -30,7 +30,8 @@ public class PriceCheckScheduler {
 
     @Scheduled(cron = "0 0 * * * *")
     public void checkPrices() {
-        List<Product> products = productService.getAllProducts();
+        LocalDateTime threshold = LocalDateTime.now().minusHours(1);
+        List<Product> products = productService.getProductsNeedingCheck(threshold);
         log.info("Starting price check for {} products", products.size());
 
         int updatedCount = 0;
@@ -74,6 +75,9 @@ public class PriceCheckScheduler {
                         } catch (TelegramApiException e) {
                             log.error("Failed to send notification for product {}: {}", product.getId(), e.getMessage());
                         }
+                    } else {
+                        product.setLastCheckedAt(LocalDateTime.now());
+                        productService.createProduct(product);
                     }
                 }
             } catch (Exception e) {

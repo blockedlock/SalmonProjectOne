@@ -1,4 +1,4 @@
-package com.myproject.salmon.parser.scrapingbee;
+package com.myproject.salmon.parser.parsers.scrapingbee;
 
 public class ScrapingBeeException extends RuntimeException {
 
