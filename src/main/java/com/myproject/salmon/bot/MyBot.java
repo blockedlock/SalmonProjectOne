@@ -1,5 +1,6 @@
 package com.myproject.salmon.bot;
 
+import com.myproject.salmon.config.BotConfig;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -15,6 +16,7 @@ public class MyBot extends TelegramLongPollingBot {
     public MyBot(BotConfig config,
                  StartHandler startHandler,
                  TextHandler textHandler) {
+        super(config.getToken());
         this.config = config;
         this.startHandler = startHandler;
         this.textHandler = textHandler;
