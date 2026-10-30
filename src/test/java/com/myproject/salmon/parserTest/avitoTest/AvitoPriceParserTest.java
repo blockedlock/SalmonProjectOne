@@ -1,6 +1,6 @@
-package com.myproject.salmon.parserTest.BooksTest;
+package com.myproject.salmon.parserTest.avitoTest;
 
-import com.myproject.salmon.parser.Books.BooksPriceParser;
+import com.myproject.salmon.parser.parsers.Avito.AvitoPriceParser;
 import com.myproject.salmon.parser.ParsedProduct;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,14 +9,14 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
 @TestPropertySource(locations = "file:.env")
-public class BooksPriceParserTest {
+public class AvitoPriceParserTest {
 
     @Autowired
-    private BooksPriceParser parser;
+    private AvitoPriceParser parser;
 
     @Test
-    void parseBooksProduct() {
-        String url = "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html";
+    void parseAvitoProduct() {
+        String url = "https://www.avito.ru/krasnodar/igry_pristavki_i_programmy/xbox_series_s_bu_s_dvumya_geympadami_8414185383?context=H4sIAAAAAAAA_wEmANn_YToxOntzOjE6IngiO3M6MTY6Ik9Hc040dm1uWmI2R25tVlciO32m0D1kJgAAAA";
         ParsedProduct result = parser.parse(url);
         System.out.println(result.name() + " → " + result.price());
     }

@@ -1,7 +1,7 @@
 package com.myproject.salmon.parserTest.dnsTest;
 
 import com.myproject.salmon.parser.ParsedProduct;
-import com.myproject.salmon.parser.dns.DnsPriceParser;
+import com.myproject.salmon.parser.parsers.dns.DnsPriceParser;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
