@@ -1,8 +1,8 @@
-package com.myproject.salmon.parser.dns;
+package com.myproject.salmon.parser.parsers.dns;
 
 import com.myproject.salmon.parser.ParsedProduct;
 import com.myproject.salmon.parser.PriceParser;
-import com.myproject.salmon.parser.scrapingbee.ScrapingBeeClient;
+import com.myproject.salmon.parser.parsers.scrapingbee.ScrapingBeeClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Document;

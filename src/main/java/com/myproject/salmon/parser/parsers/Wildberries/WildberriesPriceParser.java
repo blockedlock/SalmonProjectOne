@@ -1,8 +1,8 @@
-package com.myproject.salmon.parser.Books;
+package com.myproject.salmon.parser.parsers.Wildberries;
 
 import com.myproject.salmon.parser.ParsedProduct;
 import com.myproject.salmon.parser.PriceParser;
-import com.myproject.salmon.parser.scrapingbee.ScrapingBeeClient;
+import com.myproject.salmon.parser.parsers.scrapingbee.ScrapingBeeClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -10,17 +10,17 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 @Component
-public class BooksPriceParser implements PriceParser {
+public class WildberriesPriceParser implements PriceParser {
 
     private final ScrapingBeeClient scrapingBeeClient;
 
-    public BooksPriceParser(ScrapingBeeClient scrapingBeeClient) {
+    public WildberriesPriceParser(ScrapingBeeClient scrapingBeeClient) {
         this.scrapingBeeClient = scrapingBeeClient;
     }
 
     @Override
     public boolean supports(String url) {
-        return url.contains("books.com");
+        return url.contains("wildberries.ru");
     }
 
     @Override
@@ -29,8 +29,8 @@ public class BooksPriceParser implements PriceParser {
             String html = scrapingBeeClient.fetchHtml(url);
             Document doc = Jsoup.parse(html);
 
-            Element priceEl = doc.selectFirst(".price_color");
-            Element nameEl = doc.selectFirst("div.col-sm-6:nth-child(2) > h1:nth-child(1)");
+            Element priceEl = doc.selectFirst(".priceBlockFinalPrice");
+            Element nameEl = doc.selectFirst(".productTitle");
 
             if (priceEl == null) {
                 throw new RuntimeException("Цена не найдена");
@@ -42,7 +42,7 @@ public class BooksPriceParser implements PriceParser {
 
             return new ParsedProduct(name, price);
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка парсинга books: " + url, e);
+            throw new RuntimeException("Ошибка парсинга Wildberries: " + url, e);
         }
     }
 }
