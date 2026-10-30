@@ -56,8 +56,8 @@ public class TextHandler {
                 deleteProductUrl(chatId, username, text, bot);
                 return;
             case "📋 Список":
-                message.setText("Вы выбрали 'Список'. Вот список ваших отслеживаемых товаров:");
-                break;
+                showProductList(chatId, username, bot);
+                return;
             case "⚙️ Настройки":
                 message.setText("Вы выбрали 'Настройки'. Здесь вы можете изменить свои настройки и предпочтения.");
                 break;
@@ -125,6 +125,31 @@ public class TextHandler {
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void showProductList(long chatId, String username, MyBot bot) {
+        User user = userService.getOrCreateUser(chatId, username);
+        List<Product> products = productService.getProductsByUser(user);
+
+        if (products.isEmpty()) {
+            SendMessage message = new SendMessage();
+            message.setChatId(chatId);
+            message.setText("У вас нет отслеживаемых товаров.");
+            sendMessage(bot, message);
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder("Ваши отслеживаемые товары:\n\n");
+        for (Product product : products) {
+            sb.append("• ").append(product.getName() != null ? product.getName() : product.getUrl())
+              .append("\n   Цена: ").append(product.getCurrentPrice() != null ? product.getCurrentPrice() : "Не определена")
+              .append("\n\n");
+        }
+
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText(sb.toString());
+        sendMessage(bot, message);
     }
 
     private void deleteProductUrl(long chatId, String username, String text, MyBot bot) {
@@ -199,7 +224,7 @@ public class TextHandler {
             Product product = productService.getProductById(productId);
             SendMessage message = new SendMessage();
             message.setChatId(chatId);
-            message.setText("Удалить товар: " + product.getUrl() + "?");
+            message.setText("Удалить товар: " + (product.getName() != null ? product.getName() : product.getUrl()) + "?");
 
             InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
             List<List<InlineKeyboardButton>> rows = new ArrayList<>();
