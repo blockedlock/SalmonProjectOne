@@ -111,9 +111,7 @@ public class TextHandler {
 
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText(product.getName() != null
-                ? "Товар добавлен в отслеживание: " + product.getName()
-                : "Товар добавлен в отслеживание. Ссылка сохранена.");
+        message.setText(addedProductMessage(product));
 
         sendMessage(bot, message);
 
@@ -126,31 +124,63 @@ public class TextHandler {
             throw new RuntimeException(e);
         }
     }
-
     private void showProductList(long chatId, String username, MyBot bot) {
         User user = userService.getOrCreateUser(chatId, username);
         List<Product> products = productService.getProductsByUser(user);
 
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+
         if (products.isEmpty()) {
-            SendMessage message = new SendMessage();
-            message.setChatId(chatId);
             message.setText("У вас нет отслеживаемых товаров.");
             sendMessage(bot, message);
             return;
         }
 
-        StringBuilder sb = new StringBuilder("Ваши отслеживаемые товары:\n\n");
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         for (Product product : products) {
-            sb.append("• ").append(product.getName() != null ? product.getName() : product.getUrl())
-              .append("\n   Цена: ").append(product.getCurrentPrice() != null ? product.getCurrentPrice() : "Не определена")
-              .append("\n\n");
+            InlineKeyboardButton button = new InlineKeyboardButton();
+            button.setText(buttonLabel(product.getName(), product.getUrl()));
+            button.setCallbackData("view_product_" + product.getId());
+            rows.add(List.of(button));
         }
 
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId);
-        message.setText(sb.toString());
+        InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
+        keyboard.setKeyboard(rows);
+
+        message.setText("Вы выбрали список. Вот список отслеживаемых вами товаров:");
+        message.setReplyMarkup(keyboard);
         sendMessage(bot, message);
     }
+
+    private String buttonLabel(String name, String url) {
+        String text = (name == null || name.isBlank()) ? url : name;
+        return text.length() > 50 ? text.substring(0, 47) + "..." : text;
+    }
+
+    private String addedProductMessage(Product product) {
+        if (product.getName() != null && product.getCurrentPrice() != null) {
+            return "Товар добавлен в отслеживание: " + product.getName()
+                    + "\nЦена: " + product.getCurrentPrice().toPlainString() + " ₽";
+        }
+        if (product.getName() != null) {
+            return "Товар добавлен в отслеживание: " + product.getName()
+                    + "\nЦену снять не удалось, ссылка сохранена.";
+        }
+        return "Товар добавлен в отслеживание. Ссылка сохранена, но цену снять не удалось.";
+    }
+
+    private String productCardText(Product product) {
+        String title = (product.getName() == null || product.getName().isBlank())
+                ? product.getUrl()
+                : product.getName();
+        String price = product.getCurrentPrice() != null
+                ? product.getCurrentPrice().toPlainString() + " ₽"
+                : "не определена";
+        return title + "\n\nЦена: " + price;
+    }
+
+
 
     private void deleteProductUrl(long chatId, String username, String text, MyBot bot) {
         User user = userService.getOrCreateUser(chatId, username);
@@ -215,7 +245,32 @@ public class TextHandler {
     private final Map<Long, Integer> pendingDeleteMessage = new ConcurrentHashMap<>();
 
     public void handleCallback(long chatId, String callbackData, MyBot bot) {
-        if (callbackData.startsWith("delete_product_")) {
+        if (callbackData.startsWith("view_product_")) {
+            Long productId = Long.parseLong(callbackData.replace("view_product_", ""));
+            Product product = productService.getProductById(productId);
+
+            InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
+            List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+            InlineKeyboardButton linkButton = new InlineKeyboardButton();
+            linkButton.setText("🔗 Перейти по ссылке");
+            linkButton.setUrl(product.getUrl());
+
+            List<InlineKeyboardButton> row = new ArrayList<>();
+            row.add(linkButton);
+            rows.add(row);
+
+            keyboard.setKeyboard(rows);
+
+            SendMessage message = new SendMessage();
+            message.setChatId(chatId);
+            message.setText(productCardText(product));
+            message.setReplyMarkup(keyboard);
+
+            sendMessage(bot, message);
+        }
+
+        else if (callbackData.startsWith("delete_product_")) {
             Long productId = Long.parseLong(callbackData.replace("delete_product_", ""));
             pendingDeleteProduct.put(chatId, productId); // сохраняем ID продукта
 
