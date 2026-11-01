@@ -11,7 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.ArgumentCaptor;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.math.BigDecimal;
@@ -19,9 +21,9 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -140,11 +142,27 @@ class TextHandlerTest {
     }
 
     @Test
+    void handleCallback_viewProduct_shouldShowNameAndPrice() throws TelegramApiException {
+        when(productService.getProductById(1L)).thenReturn(testProduct);
+
+        textHandler.handleCallback(12345L, "view_product_1", bot);
+
+        ArgumentCaptor<SendMessage> captor = ArgumentCaptor.forClass(SendMessage.class);
+        verify(bot).execute(captor.capture());
+        String text = captor.getValue().getText();
+        assertTrue(text.contains("Test Product"));
+        assertTrue(text.contains("Цена: 100"));
+    }
+
+    @Test
     void handleCallback_deleteProduct_shouldConfirm() throws TelegramApiException {
         long chatId = 12345L;
         String callbackData = "delete_product_1";
         
         when(productService.getProductById(1L)).thenReturn(testProduct);
+        Message sentMessage = mock(Message.class);
+        when(sentMessage.getMessageId()).thenReturn(10);
+        when(bot.execute(any(SendMessage.class))).thenReturn(sentMessage);
 
         textHandler.handleCallback(chatId, callbackData, bot);
 

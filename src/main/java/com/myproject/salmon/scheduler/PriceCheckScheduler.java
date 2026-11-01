@@ -42,43 +42,35 @@ public class PriceCheckScheduler {
                         .findFirst()
                         .orElse(null);
 
-                if (parser != null) {
-                    ParsedProduct parsed = parser.parse(product.getUrl());
-                    BigDecimal oldPrice = product.getCurrentPrice();
+                if (parser == null) {
+                    log.warn("No parser for url {}", product.getUrl());
+                    continue;
+                }
 
-                    if (product.getCurrentPrice() == null) {
-                        log.error("Price was null for product {}, cannot check price change", product.getId());
+                ParsedProduct parsed = parser.parse(product.getUrl());
+                BigDecimal oldPrice = product.getCurrentPrice();
+                product.setLastCheckedAt(LocalDateTime.now());
+                if ((product.getName() == null || product.getName().isBlank()) && parsed.name() != null) {
+                    product.setName(parsed.name());
+                }
 
-                        SendMessage message = new SendMessage();
-                        message.setChatId(product.getUser().getChatId());
-                        message.setText("Не удалось проверить цену для товара по ссылке " + product.getUrl() + ". Цена была не установлена.");
+                if (oldPrice == null) {
+                    product.setCurrentPrice(parsed.price());
+                    productService.createProduct(product);
+                    updatedCount++;
+                    log.info("Filled missing price for product {}: {}", product.getId(), parsed.price());
+                    continue;
+                }
 
-                        try {
-                            bot.execute(message);
-                        } catch (TelegramApiException e) {
-                            log.error("Failed to send notification for product {}: {}", product.getId(), e.getMessage());
-                        }
-                    } else if (!parsed.price().equals(product.getCurrentPrice())) {
-                        product.setCurrentPrice(parsed.price());
-                        product.setLastCheckedAt(LocalDateTime.now());
-                        productService.createProduct(product);
-                        updatedCount++;
-
-                        log.info("Price changed for product {}: {} -> {}", product.getId(), oldPrice, parsed.price());
-
-                        SendMessage message = new SendMessage();
-                        message.setChatId(product.getUser().getChatId());
-                        message.setText("Цена на товар по ссылке " + product.getUrl() + " изменилась. Старая цена: " + oldPrice + " Новая цена: " + parsed.price());
-
-                        try {
-                            bot.execute(message);
-                        } catch (TelegramApiException e) {
-                            log.error("Failed to send notification for product {}: {}", product.getId(), e.getMessage());
-                        }
-                    } else {
-                        product.setLastCheckedAt(LocalDateTime.now());
-                        productService.createProduct(product);
-                    }
+                if (parsed.price().compareTo(oldPrice) != 0) {
+                    product.setCurrentPrice(parsed.price());
+                    productService.createProduct(product);
+                    updatedCount++;
+                    log.info("Price changed for product {}: {} -> {}", product.getId(), oldPrice, parsed.price());
+                    notifyUser(product, "Цена на товар по ссылке " + product.getUrl()
+                            + " изменилась. Старая цена: " + oldPrice + " Новая цена: " + parsed.price());
+                } else {
+                    productService.createProduct(product);
                 }
             } catch (Exception e) {
                 log.error("Failed to check product: {}", product.getUrl(), e);
@@ -88,4 +80,14 @@ public class PriceCheckScheduler {
         log.info("Price check completed. Updated {} products", updatedCount);
     }
 
+    private void notifyUser(Product product, String text) {
+        SendMessage message = new SendMessage();
+        message.setChatId(product.getUser().getChatId());
+        message.setText(text);
+        try {
+            bot.execute(message);
+        } catch (TelegramApiException e) {
+            log.error("Failed to send notification for product {}: {}", product.getId(), e.getMessage());
+        }
+    }
 }
