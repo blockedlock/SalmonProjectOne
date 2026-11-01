@@ -19,4 +19,8 @@ public record ScrapingBeeFetch(
     public static ScrapingBeeFetch ozon(String url) {
         return new ScrapingBeeFetch(url, true, false, true, 3000, "ru");
     }
+
+    public static ScrapingBeeFetch avito(String url) {
+        return new ScrapingBeeFetch(url, true, false, true, 3000, "ru");
+    }
 }
