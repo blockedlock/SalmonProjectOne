@@ -8,6 +8,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Достаёт имя и цену из HTML карточки Ozon.
@@ -72,9 +73,7 @@ final class OzonHtmlExtractor {
                         return name.trim();
                     }
                 }
-            } catch (Exception ignored) {
-                // следующий script
-            }
+            } catch (Exception ignored) {}
         }
         return null;
     }
@@ -153,9 +152,7 @@ final class OzonHtmlExtractor {
                 if (fromState != null) {
                     return fromState;
                 }
-            } catch (Exception ignored) {
-                // ниже пробуем видимый текст виджета
-            }
+            } catch (Exception ignored) {}
         }
 
         Element headline = widget.selectFirst(".tsHeadline600Large, [itemprop=price]");
@@ -181,14 +178,17 @@ final class OzonHtmlExtractor {
         if (raw == null || raw.isBlank()) {
             return null;
         }
-        String digits = raw
+        String cleaned = raw
                 .replace('\u00A0', ' ')
                 .replace('\u202F', ' ')
-                .replaceAll("[^0-9]", "");
-        if (digits.isEmpty()) {
+                .replaceAll("[^0-9],.", "")
+                .replace(',', '.');
+        if (cleaned.isEmpty()) {
             return null;
         }
-        return new BigDecimal(digits);
+
+        BigDecimal price = new BigDecimal(cleaned);
+        return price.setScale(0, RoundingMode.HALF_UP);
     }
 
     private static String textOf(Element el) {
